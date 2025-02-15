@@ -17,6 +17,8 @@ router.get('/register', (req, res) => {
 // Route pour gérer l'inscription (utilisant des requêtes préparées pour éviter les injections SQL)
 router.post('/register', (req, res) => {
     const { username, password } = req.body;
+
+    // utilisation de requêtes préparées
     const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
     db.query(query, [username, password], (err) => {
         if (err) throw err;

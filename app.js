@@ -1,47 +1,34 @@
-
-require('express')();
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const mysql = require('mysql2');
+const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
-const csrfProtection = csrf({ cookie: true });
-require('dotenv').config();
+const dotenv = require('dotenv').config();
+const db = require('./config/database');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Middleware
+const csrfProtection = csrf({ cookie: true });
+
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
+    // déplacement du secret dans le .env pour plus de sécurité
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
 }));
-
 app.use(csrfProtection);
 
-// Database connection
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
-db.connect(err => {
-    if (err) {
-        console.error('Database connection failed:', err);
-    } else {
-        console.log('Connected to database');
-    }
-});
+const indexRoutes = require('./routes/index');
+const authRoutes = require('./routes/auth');
+const commentRoutes = require('./routes/comments');
 
-// Routes
-app.use('/', require('./routes/index'));
-app.use('/', require('./routes/auth')); // Ajout des routes d'authentification
-app.use('/', require('./routes/comments')); // Ajout des routes des commentaires
+app.use('/', indexRoutes);
+app.use('/', authRoutes);
+app.use('/', commentRoutes);
 
-// Start server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

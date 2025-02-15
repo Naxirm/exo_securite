@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 
-// Home route
 router.get('/', (req, res) => {
     res.send('<h1>Welcome to Vulnerable App</h1><p>Go to <a href="/login">Login</a></p>');
 });
 
-// Login route (vulnerable to SQL Injection)
+// on génère un token CSRF avec un input hidden pour protéger l'application
 router.get('/login', (req, res) => {
     res.send(`
         <form method="post" action="/login">
@@ -21,6 +20,8 @@ router.get('/login', (req, res) => {
 
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
+
+    // utilisation de requêtes préparées
     const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
     db.query(query, [username, password], (err, results) => {
         if (err) throw err;
