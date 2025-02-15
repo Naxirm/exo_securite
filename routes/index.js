@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
@@ -10,13 +9,20 @@ router.get('/', (req, res) => {
 
 // Login route (vulnerable to SQL Injection)
 router.get('/login', (req, res) => {
-    res.send('<form method="post" action="/login"><input name="username" placeholder="Username"/><input type="password" name="password" placeholder="Password"/><button type="submit">Login</button></form>');
+    res.send(`
+        <form method="post" action="/login">
+            <input type="hidden" name="_csrf" value="${req.csrfToken()}">
+            <input name="username" placeholder="Username"/>
+            <input type="password" name="password" placeholder="Password"/>
+            <button type="submit">Login</button>
+        </form>
+    `);
 });
 
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
-    const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-    db.query(query, (err, results) => {
+    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+    db.query(query, [username, password], (err, results) => {
         if (err) throw err;
         if (results.length > 0) {
             req.session.user = results[0];

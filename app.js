@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const mysql = require('mysql2');
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: true });
 require('dotenv').config();
 
 const app = express();
@@ -12,10 +14,12 @@ const port = 3000;
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
-    secret: 'vulnerableSecret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true
 }));
+
+app.use(csrfProtection);
 
 // Database connection
 const db = mysql.createConnection({
