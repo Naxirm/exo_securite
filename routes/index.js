@@ -27,6 +27,8 @@ router.post('/login', (req, res) => {
         if (err) throw err;
         if (results.length > 0) {
             req.session.user = results[0];
+            // ajout du role de l'utilisateur dans la session
+            req.session.role = results[0].role;
             res.send('Login successful!');
         } else {
             res.send('Invalid credentials!');
